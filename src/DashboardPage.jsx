@@ -40,10 +40,21 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import HeaderLogos from './components/HeaderLogos';
+
 // Import local logos (Consistent with WelcomePage)
-import jhuLogo from './assets/JHU.logo_horizontal.blue.svg';
-import njdotLogo from './assets/njdot_Logo.png';
 import chatbotLogo from './assets/Chatbot.png';
+
+// Import React PDF
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
+
+// Configure PDF Worker
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
 
 // --- Configuration ---
 // TODO: Replace with your actual API Key
@@ -74,10 +85,12 @@ const NavLinks = styled(Box)({
   gap: '30px',
 });
 
-const NavLink = styled(Typography)(({ active }) => ({
+const NavLink = styled(Typography, {
+  shouldForwardProp: (prop) => prop !== 'active',
+})(({ active }) => ({
   fontSize: '1.3rem',
   fontWeight: 600,
-  color: active ? '#1976d2' : '#333', 
+  color: active ? '#1976d2' : '#333',
   cursor: 'pointer',
   position: 'relative',
   '&:hover': {
@@ -86,7 +99,7 @@ const NavLink = styled(Typography)(({ active }) => ({
   '&::after': {
     content: '""',
     position: 'absolute',
-    width: active ? '100%' : '0%', 
+    width: active ? '100%' : '0%',
     height: '2px',
     bottom: '-5px',
     left: '0',
@@ -97,22 +110,6 @@ const NavLink = styled(Typography)(({ active }) => ({
     width: '100%',
   },
 }));
-
-const LogoContainer = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-});
-
-const Logo = styled('img')({
-  height: '50px',
-  width: 'auto',
-  objectFit: 'contain',
-  transition: 'transform 0.3s ease',
-  marginLeft: '25px',
-  '&:hover': {
-    transform: 'scale(1.05)',
-  },
-});
 
 const MainContainer = styled(Box)({
   display: 'flex',
@@ -314,7 +311,9 @@ const ChatInterface = ({ uploadedFiles }) => {
                   <Typography
                     variant="body1"
                     sx={{
+                      fontSize: '1rem',
                       lineHeight: 1.6,
+                      fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
                       whiteSpace: 'pre-wrap',
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
@@ -328,8 +327,10 @@ const ChatInterface = ({ uploadedFiles }) => {
                     component="div"
                     variant="body1"
                     sx={{
+                      fontSize: '1rem',
                       lineHeight: 1.6,
-                      color: '#333',
+                      fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+                      color: '#2c3e50',
                       wordBreak: 'break-word',
                       overflowWrap: 'break-word',
                       // Headers
@@ -337,18 +338,20 @@ const ChatInterface = ({ uploadedFiles }) => {
                         mt: 2,
                         mb: 1,
                         fontWeight: 600,
+                        color: '#1a202c',
+                        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
                         '&:first-of-type': { mt: 0 }
                       },
                       // Paragraphs
                       '& p': {
-                        mb: 1,
+                        mb: 1.5,
                         '&:last-child': { mb: 0 },
                         wordBreak: 'break-word',
                         overflowWrap: 'break-word'
                       },
                       // Lists
                       '& ul, & ol': {
-                        mb: 1,
+                        mb: 1.5,
                         pl: 3,
                         '& li': { mb: 0.5 }
                       },
@@ -357,11 +360,14 @@ const ChatInterface = ({ uploadedFiles }) => {
                         whiteSpace: 'pre-wrap',
                         wordBreak: 'break-word',
                         overflowX: 'auto',
-                        backgroundColor: 'rgba(0,0,0,0.05)',
-                        borderRadius: '4px',
-                        p: 1,
-                        my: 1,
-                        maxWidth: '100%'
+                        backgroundColor: '#f8f9fa',
+                        border: '1px solid #e9ecef',
+                        borderRadius: '6px',
+                        p: 1.5,
+                        my: 1.5,
+                        maxWidth: '100%',
+                        fontFamily: 'Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
+                        fontSize: '0.9em'
                       },
                       // Inline code
                       '& code': {
@@ -371,50 +377,58 @@ const ChatInterface = ({ uploadedFiles }) => {
                         borderRadius: '3px',
                         px: 0.5,
                         py: 0.25,
-                        fontSize: '0.9em'
+                        fontSize: '0.9em',
+                        fontFamily: 'Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace'
                       },
                       // Pre code combination
                       '& pre code': {
                         backgroundColor: 'transparent',
                         p: 0,
-                        fontSize: '1em'
+                        fontSize: '1em',
+                        border: 'none'
                       },
                       // Images
                       '& img': {
                         maxWidth: '100%',
                         height: 'auto',
                         borderRadius: '8px',
-                        mt: 1,
-                        display: 'block'
+                        mt: 1.5,
+                        display: 'block',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                       },
                       // Tables
                       '& table': {
                         width: '100%',
                         borderCollapse: 'collapse',
-                        my: 1,
-                        fontSize: '0.9em',
+                        my: 1.5,
+                        fontSize: '0.95em',
                         overflowX: 'auto',
                         display: 'block'
                       },
                       '& th, & td': {
-                        border: '1px solid rgba(0,0,0,0.1)',
-                        p: 1,
+                        border: '1px solid #e0e0e0',
+                        p: 1.5,
                         textAlign: 'left'
                       },
                       '& th': {
-                        backgroundColor: 'rgba(0,0,0,0.05)',
-                        fontWeight: 600
+                        backgroundColor: '#f5f7fa',
+                        fontWeight: 600,
+                        color: '#333'
                       },
                       // Blockquotes
                       '& blockquote': {
-                        borderLeft: '3px solid rgba(0,0,0,0.2)',
+                        borderLeft: '4px solid #1976d2',
                         pl: 2,
-                        my: 1,
-                        color: 'rgba(0,0,0,0.7)'
+                        py: 0.5,
+                        my: 1.5,
+                        color: '#555',
+                        backgroundColor: '#f8f9fa',
+                        borderRadius: '0 4px 4px 0'
                       },
                       // Strong/Bold
                       '& strong': {
-                        fontWeight: 600
+                        fontWeight: 600,
+                        color: '#000'
                       }
                     }}
                   >
@@ -463,69 +477,227 @@ const ChatInterface = ({ uploadedFiles }) => {
   );
 };
 
-// 2. Document Retrieval Component (Mocked for now)
-const DocRetrievalInterface = () => {
+// 2. Document Retrieval Component
+const DocRetrievalInterface = ({ uploadedFiles }) => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
+  const [result, setResult] = useState(null);
   const [searching, setSearching] = useState(false);
+  const [error, setError] = useState(null);
+  // eslint-disable-next-line no-unused-vars
+  const [numPages, setNumPages] = useState(null);
+  const [pdfDataUrl, setPdfDataUrl] = useState(null);
 
-  const handleSearch = () => {
+  const onDocumentLoadSuccess = ({ numPages }) => {
+    setNumPages(numPages);
+  };
+
+  const handleSearch = async () => {
     if (!query) return;
+
+    // Filter PDF files from uploaded files
+    const pdfFiles = uploadedFiles.filter(file =>
+      file.inlineData && file.inlineData.mimeType === 'application/pdf' && !file.uploading
+    );
+
+    if (pdfFiles.length === 0) {
+      setError('Please upload at least one PDF file to the workspace before searching.');
+      return;
+    }
+
     setSearching(true);
-    setResults([]);
-    
-    // Mock Search
-    setTimeout(() => {
-      setResults([
-        { id: 1, page: 4, score: 0.95, text: "...visual inspection revealed <b style='color:#d32f2f'>spalling on the northwest abutment</b>. The area measures approximately 2ft x 3ft...", img: "https://via.placeholder.com/150" },
-        { id: 2, page: 12, score: 0.88, text: "...recommend immediate <b style='color:#d32f2f'>repair of the expansion joint</b> at Pier 2 due to excessive leakage observed during...", img: "https://via.placeholder.com/150" },
-        { id: 3, page: 4, score: 0.82, text: "...Table 3-1: Summary of <b style='color:#d32f2f'>Spalling Locations</b>. 1. NW Abutment (Severe). 2. SE Girder (Minor)...", img: "https://via.placeholder.com/150" }
-      ]);
+    setResult(null);
+    setError(null);
+
+    try {
+      console.log("Starting document analysis...");
+      console.log("Query:", query);
+      console.log("PDF files found:", pdfFiles.length);
+
+      // Check if API key is set
+      if (!API_KEY || API_KEY === "YOUR_API_KEY_HERE") {
+        throw new Error("API Key not configured. Please set a valid Google AI API key.");
+      }
+
+      const genAI = new GoogleGenerativeAI(API_KEY);
+      const model = genAI.getGenerativeModel({
+        model: "gemini-3-pro-preview",
+        generationConfig: { responseMimeType: "application/json" }
+      });
+
+      // Prepare PDF parts from uploaded files
+      const pdfParts = pdfFiles.map(file => ({
+        inlineData: {
+          data: file.inlineData.data,
+          mimeType: file.inlineData.mimeType
+        }
+      }));
+
+      // Store the first PDF's data URL for display
+      const firstPdfDataUrl = `data:${pdfFiles[0].inlineData.mimeType};base64,${pdfFiles[0].inlineData.data}`;
+      setPdfDataUrl(firstPdfDataUrl);
+
+      console.log("PDF files loaded from workspace");
+
+      // --- PROMPT LOCATION ---
+      const prompt = `
+        You are an expert civil engineering inspector assistant.
+        User Question: "${query}"
+        Context: The attached PDF document(s) are inspection reports.
+
+        Task:
+        1. Analyze the document(s) to find the specific answer to the user's question.
+        2. Identify the specific page numbers (1-indexed) where relevant information is found.
+        3. For EACH relevant page, provide a specific summary explaining exactly what content on that page is relevant to the question.
+
+        Output Format (JSON):
+        {
+          "overall_summary": "A high-level summary of the answer based on all findings.",
+          "relevant_pages": [
+            {
+              "page_number": integer,
+              "content_description": "Specific explanation of what is on this page relative to the query."
+            }
+          ]
+        }
+      `;
+
+      console.log("Sending request to Gemini API...");
+      const result = await model.generateContent([prompt, ...pdfParts]);
+      const response = result.response;
+      const text = response.text();
+      console.log("Received response from API");
+
+      const jsonResponse = JSON.parse(text);
+      setResult(jsonResponse);
+      console.log("Analysis completed successfully");
+
+    } catch (err) {
+      console.error("Error searching document:", err);
+
+      // Provide more specific error messages
+      let errorMessage = "Failed to analyze the document. ";
+
+      if (err.message?.includes("API key")) {
+        errorMessage += "Please check your API key configuration.";
+      } else if (err.message?.includes("quota")) {
+        errorMessage += "API quota exceeded. Please try again later.";
+      } else if (err.message?.includes("Load failed")) {
+        errorMessage += "Network connection failed. Please check your internet connection and try again.";
+      } else if (err.message?.includes("fetch")) {
+        errorMessage += "Unable to connect to Google AI API. This might be a CORS or network issue.";
+      } else if (err instanceof SyntaxError) {
+        errorMessage += "Invalid response format from API.";
+      } else {
+        errorMessage += err.message || "Please try again.";
+      }
+
+      setError(errorMessage);
+    } finally {
       setSearching(false);
-    }, 1500);
+    }
   };
 
   return (
-    <Container maxWidth="lg">
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: '#444', mb: 3 }}>
-        Semantic Document Search
-      </Typography>
-      
-      <Paper sx={{ p: '4px 10px', display: 'flex', alignItems: 'center', mb: 5, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
-        <InputBaseWrapper 
-          fullWidth 
-          placeholder="Describe the issue (e.g., 'spalling on abutments')" 
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-        />
-        <Button 
-          variant="contained" 
-          onClick={handleSearch}
-          disabled={searching}
-          sx={{ borderRadius: '4px', boxShadow: 'none', px: 4 }}
-        >
-          {searching ? <CircularProgress size={24} color="inherit" /> : 'Search'}
-        </Button>
-      </Paper>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Fixed Header Area */}
+      <Box sx={{ flexShrink: 0, p: 3, pb: 0 }}>
+        <Container maxWidth="lg">
+          <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: '#444', mb: 3 }}>
+            Semantic Document Search
+          </Typography>
+          
+          <Paper sx={{ p: '4px 10px', display: 'flex', alignItems: 'center', mb: 2, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', border: '1px solid #eee' }}>
+            <InputBaseWrapper 
+              fullWidth 
+              placeholder="Ask a question about the PDF (e.g., 'What is the condition of the deck?')" 
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            />
+            <Button 
+              variant="contained" 
+              onClick={handleSearch}
+              disabled={searching}
+              sx={{ borderRadius: '4px', boxShadow: 'none', px: 4 }}
+            >
+              {searching ? <CircularProgress size={24} color="inherit" /> : 'Search'}
+            </Button>
+          </Paper>
 
-      <Box>
-        {results.map((res) => (
-          <Card key={res.id} sx={{ mb: 2, borderLeft: '5px solid #1976d2', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-            <CardContent>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="subtitle2" color="primary">Page {res.page}</Typography>
-                <Chip label={`Match: ${(res.score * 100).toFixed(0)}%`} size="small" color="success" variant="outlined" />
-              </Box>
-              <Typography variant="body1" sx={{ color: '#555' }} dangerouslySetInnerHTML={{ __html: res.text }} />
-            </CardContent>
-          </Card>
-        ))}
-        {!searching && results.length === 0 && query && (
-            <Typography variant="body2" color="text.secondary" align="center">No results found yet.</Typography>
-        )}
+          {error && (
+            <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>
+          )}
+        </Container>
       </Box>
-    </Container>
+
+      {/* Scrollable Results Area */}
+      <Box sx={{ flex: 1, overflowY: 'auto', p: 3 }}>
+        <Container maxWidth="lg">
+          {result && (
+            <Box>
+              <Paper sx={{ p: 3, mb: 4, backgroundColor: '#f0f7ff', borderLeft: '5px solid #1976d2' }}>
+                  <Typography variant="h6" gutterBottom color="primary">Overall Summary</Typography>
+                  <Typography 
+                    variant="body1" 
+                    sx={{ 
+                      fontSize: '1.05rem', 
+                      lineHeight: 1.7, 
+                      color: '#2c3e50',
+                      fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif'
+                    }}
+                  >
+                    {result.overall_summary}
+                  </Typography>
+              </Paper>
+
+              <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>Relevant Pages</Typography>
+              
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'center' }}>
+                {result.relevant_pages && result.relevant_pages.length > 0 ? (
+                  <Document file={pdfDataUrl} onLoadSuccess={onDocumentLoadSuccess}>
+                    {result.relevant_pages.map((item, index) => (
+                      <Paper key={index} elevation={3} sx={{ p: 2, width: '100%', maxWidth: '800px', mb: 4 }}>
+                          <Box sx={{ mb: 2, borderBottom: '1px solid #eee', pb: 1 }}>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                               <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                                 Page {item.page_number}
+                               </Typography>
+                            </Box>
+                            <Typography 
+                              variant="body2" 
+                              color="textSecondary" 
+                              sx={{ 
+                                fontSize: '1rem', 
+                                lineHeight: 1.6, 
+                                color: '#444',
+                                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif'
+                              }}
+                            >
+                                {item.content_description}
+                            </Typography>
+                          </Box>
+                          
+                          <Box sx={{ display: 'flex', justifyContent: 'center', backgroundColor: '#525659', p: 1, borderRadius: '4px', overflow: 'auto' }}>
+                              <Page 
+                                pageNumber={item.page_number} 
+                                width={750} 
+                                renderTextLayer={false}
+                                renderAnnotationLayer={false}
+                                error={<Typography color="error">Failed to load page {item.page_number}</Typography>}
+                              />
+                          </Box>
+                      </Paper>
+                    ))}
+                  </Document>
+                ) : (
+                    <Typography>No specific pages found.</Typography>
+                )}
+              </Box>
+            </Box>
+          )}
+        </Container>
+      </Box>
+    </Box>
   );
 };
 
@@ -537,86 +709,243 @@ const InputBaseWrapper = styled(TextField)({
 });
 
 
-// 3. Defect Prediction Component (Mocked for now)
+// 3. Defect Prediction Component (Integrated with Gemini)
 const PredictionInterface = () => {
+  const [selectedFile, setSelectedFile] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState(null);
+  const [error, setError] = useState(null);
 
-  const runPrediction = () => {
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    try {
+        const data = e.dataTransfer.getData("application/json");
+        if (data) {
+            const file = JSON.parse(data);
+            if (file.inlineData) {
+                setSelectedFile(file);
+                setAnalysis(null);
+                setError(null);
+            }
+        }
+    } catch (err) {
+        console.error("Error parsing dropped file:", err);
+    }
+  };
+
+  const runPrediction = async () => {
+    if (!selectedFile) return;
     setAnalyzing(true);
     setAnalysis(null);
-    setTimeout(() => {
-      setAnalysis({
-        defectType: "Vertical Crack",
-        severity: "High",
-        priority: "Urgent (Within 48h)",
-        lifecycle: "Stage 3 - Rapid Propagation",
-        recommendation: "Inject epoxy resin immediately and monitor for structural shift."
+    setError(null);
+
+    try {
+      const genAI = new GoogleGenerativeAI(API_KEY);
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-3-pro-preview",
+        generationConfig: { responseMimeType: "application/json" }
       });
+
+      const prompt = `
+        You are an expert civil engineering inspector for NJ DOT.
+        Analyze the provided image of a bridge component to identify defects.
+        
+        Using the following NJ DOT Priority Repair Categories, classify the defect:
+
+        1. Emergency / Critical Finding
+           - Criteria: Major defects, potential collapse, immediate safety hazard.
+           - Timeframe: Repairs within 7 days.
+           - Examples: Crack in non-redundant member, >50% undermining of bearing area, unstable member, loose concrete over road, missing railings.
+
+        2. High Priority 1
+           - Criteria: Serious structural deficiency to primary element, potential for load restrictions/closures.
+           - Timeframe: Repairs within 30 days.
+           - Examples: Longitudinal crack in primary member, substantial section loss, pier cap distress, major scour (not critical).
+
+        3. Priority 1
+           - Criteria: Advance deficiency on primary element, potential for future deterioration.
+           - Timeframe: Repairs within 90 days.
+           - Examples: Similar to High Priority 1 but less immediate severity based on judgment.
+
+        4. Priority 2
+           - Criteria: Minor defects, not immediate risk but needs maintenance.
+           - Timeframe: Repair within next 12 months (or monitor).
+           - Examples: Short crack in redundant member, minor section loss, minor railing problems.
+
+        Output strictly in JSON format:
+        {
+          "defectType": "Short description of the defect",
+          "severity": "Critical/High/Medium/Low",
+          "priority": "The Category Name (e.g., Emergency / Critical Finding, High Priority 1, etc.)",
+          "lifecycle": "Estimated stage (e.g., Initiation, Propagation, Advanced)",
+          "recommendation": "Specific repair action based on the identified defect and priority",
+          "reasoning": "Detailed explanation of why this priority was chosen based on the visual evidence and criteria."
+        }
+      `;
+
+      const imagePart = {
+        inlineData: {
+          data: selectedFile.inlineData.data,
+          mimeType: selectedFile.inlineData.mimeType
+        }
+      };
+
+      const result = await model.generateContent([prompt, imagePart]);
+      const response = await result.response;
+      const text = response.text();
+      const jsonResponse = JSON.parse(text);
+      
+      setAnalysis(jsonResponse);
+
+    } catch (err) {
+      console.error("Error analyzing defect:", err);
+      setError("Failed to analyze the defect. Please try again.");
+    } finally {
       setAnalyzing(false);
-    }, 2500);
+    }
   };
 
   return (
-    <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: '#444', mb: 4 }}>
+    <Container maxWidth="lg" sx={{ textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: '#444', mb: 2 }}>
         Defect Lifecycle & Priority Analysis
       </Typography>
 
-      <Box 
-        sx={{ 
-          border: '2px dashed #ccc', 
-          borderRadius: '10px', 
-          p: 6, 
-          mb: 4, 
-          backgroundColor: '#fafafa',
-          cursor: 'pointer',
-          '&:hover': { borderColor: '#1976d2', backgroundColor: '#f0f7ff' }
-        }}
-        onClick={runPrediction}
-      >
-        <AutoAwesomeIcon sx={{ fontSize: 60, color: '#aaa', mb: 2 }} />
-        <Typography color="textSecondary">
-          {analyzing ? "Gemini is analyzing the defect pattern..." : "Click to Analyze selected File/Image"}
-        </Typography>
-        {analyzing && <CircularProgress sx={{ mt: 2 }} />}
-      </Box>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto', pb: 2 }}>
+        
+        {/* Drop Zone / Selection Area */}
+        <Paper
+            elevation={0}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            sx={{ 
+            border: '2px dashed', 
+            borderColor: selectedFile ? '#1976d2' : '#ccc', 
+            borderRadius: '16px', 
+            p: 4, 
+            backgroundColor: selectedFile ? '#f0f7ff' : '#fafafa',
+            transition: 'all 0.2s',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '200px',
+            flexShrink: 0
+            }}
+        >
+            {selectedFile ? (
+                <Box sx={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
+                    <img 
+                        src={selectedFile.preview} 
+                        alt="Selected" 
+                        style={{ width: '100%', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} 
+                    />
+                     <IconButton 
+                        size="small" 
+                        onClick={() => { setSelectedFile(null); setAnalysis(null); }}
+                        sx={{ position: 'absolute', top: -10, right: -10, bgcolor: 'white', border: '1px solid #ccc', '&:hover': { bgcolor: '#f5f5f5' } }}
+                    >
+                        <DeleteIcon fontSize="small" />
+                    </IconButton>
+                    <Typography variant="subtitle2" sx={{ mt: 1, fontWeight: 600 }}>{selectedFile.name}</Typography>
+                </Box>
+            ) : (
+                <>
+                    <AutoAwesomeIcon sx={{ fontSize: 48, color: '#ccc', mb: 2 }} />
+                    <Typography variant="h6" color="textSecondary" sx={{ mb: 1 }}>
+                        Drag & Drop a Project File Here
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                        Select a file from the sidebar to analyze its defects.
+                    </Typography>
+                </>
+            )}
+        </Paper>
 
-      {analysis && (
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-          <Card sx={{ textAlign: 'left', borderTop: '5px solid #d32f2f', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
-            <CardContent>
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="overline" color="textSecondary">Defect Type</Typography>
-                  <Typography variant="h6">{analysis.defectType}</Typography>
+        {/* Action Button */}
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Button 
+                variant="contained" 
+                size="large"
+                disabled={!selectedFile || analyzing}
+                onClick={runPrediction}
+                startIcon={analyzing ? <CircularProgress size={20} color="inherit" /> : <AssessmentIcon />}
+                sx={{ px: 4, py: 1.5, borderRadius: '30px', textTransform: 'none', fontSize: '1.1rem' }}
+            >
+                {analyzing ? "Analyzing..." : "Analyze Defect"}
+            </Button>
+        </Box>
+
+        {error && <Typography color="error">{error}</Typography>}
+
+        {/* Results Area */}
+        {analysis && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <Card sx={{ textAlign: 'left', borderTop: '5px solid #d32f2f', boxShadow: '0 10px 30px rgba(0,0,0,0.08)', borderRadius: '12px', overflow: 'visible' }}>
+                <CardContent sx={{ p: 4 }}>
+                <Grid container spacing={4}>
+                    <Grid item xs={12} md={6}>
+                        <Box sx={{ mb: 3 }}>
+                            <Typography variant="overline" color="textSecondary" sx={{ letterSpacing: 1 }}>Defect Type</Typography>
+                            <Typography variant="h5" sx={{ fontWeight: 600, color: '#333' }}>{analysis.defectType}</Typography>
+                        </Box>
+                        <Box sx={{ mb: 3 }}>
+                            <Typography variant="overline" color="textSecondary" sx={{ letterSpacing: 1 }}>Severity & Priority</Typography>
+                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+                                <Chip label={analysis.severity} color={analysis.severity === 'Critical' || analysis.severity === 'High' ? "error" : "warning"} variant="outlined" />
+                                <Chip label={analysis.priority} color="error" icon={<DescriptionIcon />} />
+                            </Box>
+                        </Box>
+                        <Box>
+                             <Typography variant="overline" color="textSecondary" sx={{ letterSpacing: 1 }}>Lifecycle Stage</Typography>
+                             <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>{analysis.lifecycle}</Typography>
+                        </Box>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={6}>
+                        <Box sx={{ p: 3, backgroundColor: '#f5f5f5', borderRadius: '12px', height: '100%' }}>
+                            <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <AutoAwesomeIcon fontSize="small" color="primary" /> AI Recommendation
+                            </Typography>
+                            <Typography 
+                              variant="body1" 
+                              sx={{ 
+                                mb: 2, 
+                                lineHeight: 1.6, 
+                                fontSize: '1rem',
+                                color: '#333',
+                                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif'
+                              }}
+                            >
+                              {analysis.recommendation}
+                            </Typography>
+                            
+                            <Divider sx={{ my: 2 }} />
+                            
+                            <Typography variant="subtitle2" gutterBottom>Reasoning</Typography>
+                            <Typography 
+                              variant="body1" 
+                              color="textSecondary" 
+                              sx={{ 
+                                lineHeight: 1.6, 
+                                fontSize: '1rem',
+                                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif'
+                              }}
+                            >
+                              {analysis.reasoning}
+                            </Typography>
+                        </Box>
+                    </Grid>
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="overline" color="textSecondary">Severity</Typography>
-                  <Typography variant="h6" color="error">{analysis.severity}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                   <Divider sx={{ my: 1 }} />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="overline" color="textSecondary">Lifecycle Stage</Typography>
-                  <Chip label={analysis.lifecycle} color="warning" />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="overline" color="textSecondary">Priority</Typography>
-                  <Chip label={analysis.priority} color="error" />
-                </Grid>
-                <Grid item xs={12}>
-                  <Box sx={{ mt: 2, p: 2, backgroundColor: '#f5f5f5', borderRadius: '5px' }}>
-                    <Typography variant="subtitle2" gutterBottom>AI Recommendation:</Typography>
-                    <Typography variant="body2">{analysis.recommendation}</Typography>
-                  </Box>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+                </CardContent>
+            </Card>
+            </motion.div>
+        )}
+      </Box>
     </Container>
   );
 };
@@ -731,10 +1060,7 @@ const DashboardPage = () => {
           <NavLink active>Dashboard</NavLink>
         </NavLinks>
         
-        <LogoContainer>
-          <Logo src={njdotLogo} alt="NJ Department of Transportation" />
-          <Logo src={jhuLogo} alt="Johns Hopkins University" />
-        </LogoContainer>
+        <HeaderLogos />
       </NavBar>
 
       <MainContainer>
@@ -786,6 +1112,11 @@ const DashboardPage = () => {
             {files.map((file, index) => (
               <ListItem 
                 key={index} 
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData("application/json", JSON.stringify(file));
+                  e.dataTransfer.effectAllowed = "copy";
+                }}
                 secondaryAction={
                   <IconButton edge="end" size="small" onClick={() => handleDeleteFile(index)}><DeleteIcon fontSize="small" /></IconButton>
                 }
@@ -793,7 +1124,9 @@ const DashboardPage = () => {
                   backgroundColor: '#f9f9f9', 
                   mb: 1, 
                   borderRadius: '8px',
-                  border: '1px solid #eee'
+                  border: '1px solid #eee',
+                  cursor: 'grab',
+                  '&:active': { cursor: 'grabbing' }
                 }}
               >
                 <ListItemIcon sx={{ minWidth: 0, width: 64, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -862,13 +1195,14 @@ const DashboardPage = () => {
                 </motion.div>
               )}
               {tabValue === 1 && (
-                <motion.div 
+                <motion.div
                   key="retrieval"
-                  initial={{ opacity: 0, x: -10 }} 
-                  animate={{ opacity: 1, x: 0 }} 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 10 }}
+                  style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}
                 >
-                  <DocRetrievalInterface />
+                  <DocRetrievalInterface uploadedFiles={files} />
                 </motion.div>
               )}
               {tabValue === 2 && (
@@ -877,6 +1211,7 @@ const DashboardPage = () => {
                   initial={{ opacity: 0, x: -10 }} 
                   animate={{ opacity: 1, x: 0 }} 
                   exit={{ opacity: 0, x: 10 }}
+                  style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}
                 >
                   <PredictionInterface />
                 </motion.div>

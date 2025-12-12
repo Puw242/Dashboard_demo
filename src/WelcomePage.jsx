@@ -3,11 +3,11 @@ import { Box, Typography, Button, Container } from '@mui/material';
 import { styled } from '@mui/system';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import HeaderLogos from './components/HeaderLogos';
 import backgroundImg from './assets/background.png';
 
 // Import local logos from assets directory
-import jhuLogo from './assets/JHU.logo_horizontal.blue.svg';
-import njdotLogo from './assets/njdot_Logo.png';
+// Logos are now handled in HeaderLogos component
 
 // Styled components
 const WelcomeBackground = styled(Box)({
@@ -90,22 +90,6 @@ const NavLink = styled(Typography)({
   },
 });
 
-const LogoContainer = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-});
-
-const Logo = styled('img')({
-  height: '50px',
-  width: 'auto',
-  objectFit: 'contain',
-  transition: 'transform 0.3s ease',
-  marginLeft: '25px', // Spacing between logos
-  '&:hover': {
-    transform: 'scale(1.05)',
-  },
-});
-
 const WelcomePage = () => {
   const navigate = useNavigate();
 
@@ -149,11 +133,7 @@ const WelcomePage = () => {
           <NavLink onClick={handleGetStarted}>Dashboard</NavLink>
         </NavLinks>
         
-        <LogoContainer>
-          {/* NJ DOT First */}
-          <Logo src={njdotLogo} alt="NJ Department of Transportation" />
-          <Logo src={jhuLogo} alt="Johns Hopkins University" />
-        </LogoContainer>
+        <HeaderLogos />
       </NavBar>
 
       <Container 
