@@ -5,7 +5,7 @@ import './App.css';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/Dashboard_demo">
       <Routes>
         <Route path="/" element={<WelcomePage />} />
         <Route path="/chatbot" element={<DashboardPage />} />
